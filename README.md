@@ -52,13 +52,13 @@
 
 ```powershell
 uv sync
-uv run python -m police_thief peer --role police
+uv run python -m uoh_mh01 peer --role police
 ```
 
-Replay a saved match:
+Replay a saved match (stage 6):
 
 ```powershell
-uv run python -m police_thief replay --log logs/police_match.json
+uv run python -m uoh_mh01 replay --log logs/police_match.json
 ```
 
 ## Process separation
@@ -66,3 +66,18 @@ uv run python -m police_thief replay --log logs/police_match.json
 The police and thief agents **must** run as two fully separate processes under
 separate configuration directories. This repository contains the `police` side only.
 No shared memory, no shared variables, no shared live module between the two roles.
+
+## References
+
+- The rulebook (`docs/police_thief_p2p.pdf` in the reference repo below) is the sole
+  binding specification.
+- [`rmisegal/Game-P2P-Cop-Chase`](https://github.com/rmisegal/Game-P2P-Cop-Chase) —
+  the course's official reference implementation. Read for understanding and
+  cross-checked against; no code from it is vendored into this repository.
+- [`Imreec/copthief-league-protocol`](https://github.com/Imreec/copthief-league-protocol) —
+  a student-authored interop/conformance kit pinning byte-level wire constructions
+  (canonical JSON, commit-reveal, agreement signatures, `game_id`/`game_uid`) the
+  rulebook leaves as prose. Not a specification; consulted for PRD-03/PRD-07 and
+  credited here per its own terms. No code from it is vendored into this repository —
+  its published test vectors are ported into this project's own test suite as
+  fixtures instead (stage 3).
