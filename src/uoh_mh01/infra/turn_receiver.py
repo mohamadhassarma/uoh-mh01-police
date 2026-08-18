@@ -25,6 +25,7 @@ from .protocol import MoveRequest
 from .protocol_builders import request_to_action
 from .protocol_response import MoveResponse, TerminalInfo
 from .receiver_helpers import counter_mismatch as _counter_mismatch
+from .receiver_helpers import early_response as _early_response
 from .receiver_helpers import sender_position as _sender_position
 
 logger = logging.getLogger(__name__)
@@ -35,12 +36,19 @@ class _TurnReceiverMixin:
         self._in_flight += 1
         try:
             async with self._lock:
+                early = _early_response(self, request)
+                if early is not None:
+                    return early
                 sender = Side(request.role)
                 if sender is not other_side(self.role):
                     return MoveResponse(accepted=False, reason=f"unexpected sender role {request.role!r}")
                 if request.action_type == "declare_terminal":
-                    return self._handle_declare_terminal(sender, request)
-                return self._handle_move_or_barrier(sender, request)
+                    response = self._handle_declare_terminal(sender, request)
+                else:
+                    response = self._handle_move_or_barrier(sender, request)
+                if request.commit:
+                    self._replayed_responses[request.commit] = response
+                return response
         finally:
             self._in_flight -= 1
 

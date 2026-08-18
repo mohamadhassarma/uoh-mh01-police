@@ -37,9 +37,11 @@ def test_log_artifact_builder_records_and_reports_audit():
     )
     builder.add_record(1, {"step": 1}, "nonce1", "commit1")
     doc = builder.build(
-        result="capture_landing", winner_role="police", steps=1, audit_of_opponent_passed=True, audit_verified_steps=1, audit_failed_steps=[]
+        result="capture_landing", winner_role="police", offending_side=None, steps=1,
+        audit_of_opponent_passed=True, audit_verified_steps=1, audit_failed_steps=[],
     )
     assert doc["summary"]["result"] == "capture_landing"
+    assert doc["summary"]["offending_side"] is None
     assert doc["summary"]["audit"]["passed"] is True
     assert doc["records"][0]["commit"] == "commit1"
 

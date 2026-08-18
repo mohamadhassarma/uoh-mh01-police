@@ -25,6 +25,13 @@ from .watchdog import FreezeDetected
 
 logger = logging.getLogger(__name__)
 
+# Grace period for an opponent message CURRENTLY in flight (self._in_flight
+# > 0) when my own passive-wait timeout fires (_wait_for_opponent) — covers
+# ordinary processing latency under load; never extends the wait when the
+# opponent sent nothing at all (_in_flight stays 0). An internal robustness
+# margin, not a signed contract value.
+_IN_FLIGHT_GRACE_SEC = 5.0
+
 
 class _MatchLoopMixin:
     async def run_match(self) -> MatchOutcome:
@@ -88,6 +95,16 @@ class _MatchLoopMixin:
             await asyncio.wait_for(self._opponent_moved.wait(), timeout=wait_budget)
         if self.outcome is not None or self._pending_error is not None:
             return
+        if self._in_flight > 0:
+            # The opponent's message DID arrive before I gave up — slow
+            # under load, not silent. Grace period instead of unilaterally
+            # blaming a side that is not actually unresponsive. PRD-03
+            # "Symmetric timeout outcomes".
+            deadline = asyncio.get_event_loop().time() + _IN_FLIGHT_GRACE_SEC
+            while self._in_flight > 0 and asyncio.get_event_loop().time() < deadline:
+                await asyncio.sleep(0.05)
+            if self.outcome is not None or self._pending_error is not None:
+                return
         if time.monotonic() - self._turn_started_at > self.peer_config.turn_timeout_seconds:
             logger.warning("opponent exceeded my private turn_timeout_seconds budget")
             self._finish(TerminalCondition.TECHNICAL_LOSS, offending_side=other_side(self.role))

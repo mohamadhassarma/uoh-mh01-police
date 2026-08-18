@@ -4,12 +4,35 @@ file under the project's ~150-line budget.
 
 from __future__ import annotations
 
+from typing import Any
+
 from ..domain.state import MatchState, Side
 from .protocol import MoveRequest
+from .protocol_response import MoveResponse
 
 
 def sender_position(state: MatchState, sender: Side):
     return state.cop_pos if sender is Side.POLICE else state.thief_pos
+
+
+def early_response(runtime: Any, request: MoveRequest) -> MoveResponse | None:
+    """A response to short-circuit `receive_opponent_move` with, BEFORE any
+    other handling — `None` means "no early answer, proceed normally."
+
+    - A retried commit gets back the SAME answer I gave the first time,
+      regardless of what my state looks like now — this is what makes a
+      lost/delayed RESPONSE (not a lost request) harmless. See
+      orchestrator.py's `_replayed_responses` docstring.
+    - If my side has already finished this sub-game (e.g. a timeout-based
+      technical loss I already self-declared), a genuinely NEW message
+      arriving after that point is rejected outright rather than silently
+      overwriting an outcome already returned to my own caller. See PRD-03
+      "Symmetric timeout outcomes"."""
+    if request.commit and request.commit in runtime._replayed_responses:
+        return runtime._replayed_responses[request.commit]
+    if runtime.outcome is not None:
+        return MoveResponse(accepted=False, reason="my side has already finished this sub-game")
+    return None
 
 
 def counter_mismatch(request: MoveRequest, expected: MatchState) -> str | None:

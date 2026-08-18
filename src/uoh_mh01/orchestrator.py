@@ -35,6 +35,7 @@ from .infra.audit import ReceivedCommitLog
 from .infra.match_log import MatchLogRecorder
 from .infra.match_loop import _MatchLoopMixin
 from .infra.outcomes import DisputedOutcomeError, MatchOutcome
+from .infra.protocol_response import MoveResponse
 from .infra.state_machine import StateMachine
 from .infra.turn_receiver import _TurnReceiverMixin
 from .infra.turn_sender import _TurnSenderMixin
@@ -101,6 +102,14 @@ class PeerRuntime(_MatchLoopMixin, _TurnSenderMixin, _TurnReceiverMixin):
         # rewrite after the fact.
         self.own_sealed_records: list[dict[str, Any]] = []
         self.received_commits = ReceivedCommitLog()
+        # At-least-once delivery (interop kit SPEC §7.1): a retried
+        # submit_move/reveal_audit call carries the SAME commit as the
+        # original. Caching the response we gave the first time and
+        # replaying it verbatim on a repeat — rather than re-evaluating the
+        # request against state that has since moved on — is what makes a
+        # lost RESPONSE (not a lost request) harmless instead of a spurious
+        # rejection. See PRD-03 "Symmetric timeout outcomes".
+        self._replayed_responses: dict[str, MoveResponse] = {}
 
     # ------------------------------------------------------------------
     # The top-level match loop AND settling a final/claimed outcome

@@ -80,6 +80,7 @@ class LogArtifactBuilder:
         *,
         result: str | None,
         winner_role: str | None,
+        offending_side: str | None,
         steps: int,
         audit_of_opponent_passed: bool | None,
         audit_verified_steps: int,
@@ -98,6 +99,10 @@ class LogArtifactBuilder:
                 "opponent_group_id": self.opponent_group_id,
                 "result": result,
                 "winner_role": winner_role,
+                # Who was blamed for a technical loss — see PRD-03
+                # "Symmetric timeout outcomes": both sides' own artifacts
+                # must agree on this, not just on `result`.
+                "offending_side": offending_side,
                 "steps": steps,
                 "started_at": self.started_at,
                 "ended_at": ended_at,

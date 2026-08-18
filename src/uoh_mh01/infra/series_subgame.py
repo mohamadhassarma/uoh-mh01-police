@@ -29,13 +29,15 @@ async def play_one_sub_game(
     series_runtime.start_sub_game(sub_game_number, peer_runtime)
 
     summary: dict[str, Any] = {"sub_game_number": sub_game_number, "role": role.value}
+    offending_side_str: str | None = None
     try:
         outcome = await peer_runtime.run_match()
+        offending_side_str = outcome.offending_side.value if outcome.offending_side else None
         summary.update(
             terminal_condition=outcome.terminal_condition.value,
             police_score=outcome.police_score,
             thief_score=outcome.thief_score,
-            offending_side=outcome.offending_side.value if outcome.offending_side else None,
+            offending_side=offending_side_str,
         )
         result_str, winner_role = outcome.terminal_condition.value, _winner_role(outcome)
     except UndefinedOutcomeError as exc:
@@ -87,6 +89,7 @@ async def play_one_sub_game(
         log_builder.build(
             result=result_str,
             winner_role=winner_role,
+            offending_side=offending_side_str,
             steps=len(peer_runtime.state.move_log),
             audit_of_opponent_passed=audit_of_opponent.passed if audit_of_opponent else None,
             audit_verified_steps=audit_of_opponent.verified_steps if audit_of_opponent else 0,
