@@ -16,6 +16,7 @@ from pathlib import Path
 from uoh_mh01.domain.board import Board, Position
 from uoh_mh01.domain.canonical import canonical_json
 from uoh_mh01.domain.scent import advance_field, deserialize_field, emit, serialize_field
+from uoh_mh01.shared.locked_model import SCENT_MODEL_DOC, scent_model_sha256
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "vectors"
 
@@ -72,6 +73,17 @@ def test_deserialize_field_round_trips_through_serialize(config):
     field = emit(Position(3, 3), board, config.pheromones)
     wire = serialize_field(field)
     assert deserialize_field(wire) == field
+
+
+def test_locked_scent_model_matches_the_kit_promoted_hash():
+    # tests/fixtures/vectors/README.md's own integrity boundary: check
+    # against the kit's PUBLISHED hash value, not against imported kit code.
+    # Interop kit vectors/locked_model.json registers `multiplicative_book_v1`
+    # (status PROMOTED) under this exact sha256 — reproducing it byte-for-byte
+    # is a real, independent conformance signal that our canonical_json and
+    # doc construction match a real external implementation's.
+    assert SCENT_MODEL_DOC["params"]["kernel"] == _load("scent_book_v3.json")["kernel"]
+    assert scent_model_sha256() == "934c220d5bf62acaa3297c6c9d723ea954c220260b02292ca17f6d5daef9f4d9"
 
 
 def test_same_field_computed_twice_in_process_is_byte_identical(config):
