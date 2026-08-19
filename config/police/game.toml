@@ -12,8 +12,11 @@ my_port = 8801                              # MY MCP server port
 opponent_url = "http://127.0.0.1:8802/mcp" # the only thing I know about the opponent
 turn_timeout_seconds = 180
 
-# [strategy] -- optional: point at YOUR brain subclass (else the shipped heuristic runs)
-# police_class = "uoh_mh01.strategy:MyPoliceBrain"
+[strategy]
+# PRD-05: the containment brain used for real play. Comment this out (or
+# point at a different class) to fall back to the shipped random baseline
+# the evaluation harness compares it against.
+police_class = "uoh_mh01.domain.police_brain:ContainmentPoliceBrain"
 
 [trash_talk]
 # HOW the banter is produced. The MOVE is always pure Python.
