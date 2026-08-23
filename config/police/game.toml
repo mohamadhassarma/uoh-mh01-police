@@ -9,7 +9,7 @@ repos = { cop = "https://github.com/mohamadhassarma/uoh-mh01-police", thief = "h
 
 [network]
 my_port = 8801                              # MY MCP server port
-opponent_url = "http://127.0.0.1:8802/mcp" # the only thing I know about the opponent
+opponent_url = "https://sputter-petted-fanciness.ngrok-free.dev/mcp" # the only thing I know about the opponent
 turn_timeout_seconds = 180
 
 [strategy]
