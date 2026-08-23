@@ -5,6 +5,8 @@ description = "Police agent — distributed cops-and-robbers over P2P (Universit
 requires-python = ">=3.11"
 dependencies = [
     "fastmcp>=2.0",
+    "google-api-python-client>=2.100",
+    "google-auth-oauthlib>=1.2",
 ]
 
 [dependency-groups]
