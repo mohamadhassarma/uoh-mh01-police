@@ -53,15 +53,41 @@ def test_missing_section_raises_clearly():
 
 
 def test_real_toml_loads_from_disk():
+    """The SHIPPED private config must load and be usable.
+
+    `opponent_url` and `my_port` are DEPLOYMENT values: the URL is whatever
+    tunnel the current opponent is reachable at, and pinning one made the
+    suite go red every time we pointed at a real opponent instead of
+    localhost. Our own identity and our own strategy are pinned, because
+    those are ours and a change to them is a defect.
+
+    The parser already enforces non-empty strings and positive integers
+    (`shared/peer_config_validators.py`), so this asserts only what it
+    cannot: that the URL is actually addressable and the brain actually
+    imports.
+    """
     from pathlib import Path
+    from urllib.parse import urlparse
+
+    from uoh_mh01.domain.brain_base import load_brain_class
 
     repo_root = Path(__file__).resolve().parents[1]
     peer = load_peer_config("police", repo_root / "config" / "police" / "game.toml", repo_root / "config" / "game.json")
+
     assert peer.role == "police"
     assert peer.group_id == "uoh-mh01"
-    assert peer.my_port == 8801
-    assert peer.opponent_url == "http://127.0.0.1:8802/mcp"
+
+    parsed = urlparse(peer.opponent_url)
+    assert parsed.scheme in ("http", "https"), peer.opponent_url
+    assert parsed.netloc, peer.opponent_url
+    # A URL without the MCP path reaches a server that will never answer a
+    # tool call - accepted by the parser, fatal at the handshake.
+    assert parsed.path.endswith("/mcp"), peer.opponent_url
+    assert 1 <= peer.my_port <= 65535
+
+    # The shipped brain must be importable, or the first real turn dies.
     assert peer.police_class == "uoh_mh01.domain.police_brain:ContainmentPoliceBrain"
+    assert load_brain_class(peer.police_class) is not None
 
 
 # --- overlay rule: the signed contract always wins on a shared key ---
