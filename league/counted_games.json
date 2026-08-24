@@ -19,6 +19,14 @@
       "ended_at": "2026-08-23T22:55:22.134733+00:00",
       "status": "sent",
       "detail": "gmail message id 1a030f1db72bfa41"
+    },
+    {
+      "opponent_group_id": "AmalOnly",
+      "game_id": "AmalOnly-vs-uoh-mh01",
+      "game_uid": "516f6f69-78c3-ecde-a849-1803aa7c171d",
+      "ended_at": "2026-08-24T12:37:01.415843+00:00",
+      "status": "sent",
+      "detail": "gmail message id 1a033c64216d85c8"
     }
   ]
 }
