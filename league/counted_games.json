@@ -8,6 +8,17 @@
       "ended_at": "2026-08-23T21:23:31.429960+00:00",
       "status": "sent",
       "detail": "gmail message id 1a03085ccd9e11fa (sent 2026-08-24)"
+    },
+    {
+      "opponent_group_id": "ali-ahm1",
+      "game_id": "ali-ahm1-vs-uoh-mh01",
+      "game_uid": "feb39143-b9e2-850f-bbb1-a58be0f5d9cc",
+      "attempt": 2,
+      "correction_of": 1,
+      "correction_reason": "the first send was an accident on a friendly; the lecturer has been notified and this is the corrected report",
+      "ended_at": "2026-08-23T22:55:22.134733+00:00",
+      "status": "sent",
+      "detail": "gmail message id 1a030f1db72bfa41"
     }
   ]
 }
